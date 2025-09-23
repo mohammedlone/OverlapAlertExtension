@@ -1,0 +1,40 @@
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Development files
+create_icon.html
+create_simple_icon.html
+icon_preview.html
+generate_icons.py
+icon.svg
+
+# Backup directories
+C:\temp\OverlapAlert1\
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Node modules (if any)
+node_modules/
+npm-debug.log*
+
+# Build outputs
+dist/
+build/

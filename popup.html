@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OverlapAlert</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="popup-container">
+        <div class="popup-header">
+            <h1 class="popup-title">
+                <div class="popup-logo"></div>
+                OverlapAlert
+            </h1>
+            <p class="popup-subtitle">Smart subscription monitoring</p>
+        </div>
+        
+        <div class="popup-content">
+            <!-- Stats Section -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalSubscriptions">0</div>
+                    <div class="stat-label">Active Services</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalUsage">0</div>
+                    <div class="stat-label">This Month</div>
+                </div>
+            </div>
+
+            <!-- Subscriptions Section -->
+            <div class="subscriptions-section">
+                <div class="section-header">
+                    <h2 class="section-title">Your Subscriptions</h2>
+                    <button class="btn btn-small btn-primary" id="addSubscriptionBtn">+ Add Subscription</button>
+                </div>
+                <div class="subscription-list" id="subscriptionList">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions Section -->
+            <div class="actions-section">
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="refreshBtn">Refresh Data</button>
+                    <button class="btn btn-secondary" id="exportBtn">Export Data</button>
+                </div>
+                <button class="btn btn-danger" id="clearDataBtn">Clear All Data</button>
+            </div>
+
+            <!-- Settings Section -->
+            <div class="settings-section">
+                <h3 class="settings-title">Settings</h3>
+                <div class="setting-item">
+                    <span class="setting-label">Enable warnings</span>
+                    <div class="toggle active" id="warningsToggle"></div>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">Track usage</span>
+                    <div class="toggle active" id="trackingToggle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Subscription Modal -->
+    <div class="modal" id="addSubscriptionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Subscription</h3>
+                <button class="modal-close" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addSubscriptionForm">
+                    <div class="form-group">
+                        <label for="serviceName">Service Name</label>
+                        <input type="text" id="serviceName" placeholder="e.g., Netflix, Spotify" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" required>
+                            <option value="">Select a category</option>
+                            <option value="AI Writing">AI Writing</option>
+                            <option value="Design">Design</option>
+                            <option value="Project Management">Project Management</option>
+                            <option value="Communication">Communication</option>
+                            <option value="Development">Development</option>
+                            <option value="Analytics">Analytics</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Productivity">Productivity</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="monthlyCost">Monthly Cost (optional)</label>
+                        <input type="number" id="monthlyCost" placeholder="0.00" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">Notes (optional)</label>
+                        <textarea id="notes" placeholder="Any additional notes about this subscription"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelAddBtn">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="saveSubscriptionBtn">Add Subscription</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
