@@ -1,4 +1,4 @@
-# GitHub Backup Instructions for OverlapAlert
+# GitHub Backup Instructions for OverlapAlertExtension
 
 ## 🚀 Quick Setup
 
@@ -14,13 +14,13 @@ git init
 git add .
 
 # Create initial commit
-git commit -m "Initial commit: OverlapAlert Chrome Extension v1.0.0"
+git commit -m "Initial commit: OverlapAlertExtension Chrome Extension v1.0.0"
 ```
 
 ### Step 2: Create GitHub Repository
 1. Go to [GitHub.com](https://github.com)
 2. Click "New repository" (green button)
-3. Repository name: `OverlapAlert`
+3. Repository name: `OverlapAlertExtension`
 4. Description: `Smart subscription monitoring Chrome extension`
 5. Make it **Public** (so others can see your cool extension!)
 6. **DON'T** initialize with README (we already have one)
@@ -29,7 +29,7 @@ git commit -m "Initial commit: OverlapAlert Chrome Extension v1.0.0"
 ### Step 3: Connect Local to GitHub
 ```bash
 # Add remote origin (replace YOUR_USERNAME with your GitHub username)
-git remote add origin https://github.com/YOUR_USERNAME/OverlapAlert.git
+git remote add origin https://github.com/YOUR_USERNAME/OverlapAlertExtension.git
 
 # Push to GitHub
 git push -u origin main

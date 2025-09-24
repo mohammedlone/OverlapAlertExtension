@@ -572,12 +572,7 @@
     document.head.appendChild(style);
     document.body.appendChild(warningDiv);
     
-    // Auto-remove after 10 seconds
-    setTimeout(() => {
-      if (warningDiv.parentNode) {
-        warningDiv.remove();
-      }
-    }, 10000);
+    // Popup will only close when user clicks the close button
   }
 
 
@@ -597,7 +592,7 @@
         <div class="overlap-alert-header">
           <div class="overlap-alert-icon">⚠️</div>
           <div class="overlap-alert-title">Subscription Overlap Detected</div>
-          <button class="overlap-alert-close" onclick="this.parentElement.parentElement.parentElement.remove()">×</button>
+          <button class="overlap-alert-close" data-action="close">×</button>
         </div>
         <div class="overlap-alert-content">
           <div class="overlap-alert-message">
@@ -795,12 +790,7 @@
     document.head.appendChild(style);
     document.body.appendChild(warningDiv);
 
-    // Auto-remove after 30 seconds
-    setTimeout(() => {
-      if (warningDiv.parentNode) {
-        warningDiv.remove();
-      }
-    }, 30000);
+    // Popup will only close when user clicks the dismiss button
   }
 
   // Show subscription reminder popup
@@ -809,6 +799,7 @@
     console.log('Subscription:', existingSubscription);
     console.log('Service:', currentService);
     console.log('Popup type:', popupType);
+    console.log('TIMESTAMP:', new Date().toISOString());
     
     // Remove any existing warning
     const existingWarning = document.getElementById('overlap-alert-warning');
@@ -829,7 +820,7 @@
         <div class="overlap-alert-header">
           <div class="overlap-alert-icon">${popupType === 'pricing' ? 'ℹ️' : '💡'}</div>
           <div class="overlap-alert-title">${title}</div>
-          <button class="overlap-alert-close" onclick="this.parentElement.parentElement.parentElement.remove()">×</button>
+          <button class="overlap-alert-close" data-action="close">×</button>
         </div>
         <div class="overlap-alert-content">
           <div class="overlap-alert-message">
@@ -1024,12 +1015,38 @@
     document.head.appendChild(style);
     document.body.appendChild(reminderDiv);
 
-    // Auto-remove after 15 seconds
-    setTimeout(() => {
-      if (reminderDiv.parentNode) {
+    // Debug: Log popup creation
+    console.log('=== POPUP CREATED ===');
+    console.log('Popup element:', reminderDiv);
+    console.log('Popup position:', reminderDiv.style.position);
+    console.log('Popup z-index:', reminderDiv.style.zIndex);
+    console.log('Popup visible:', reminderDiv.offsetHeight > 0);
+    console.log('Creation timestamp:', new Date().toISOString());
+    
+    // Monitor if popup gets removed unexpectedly
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
+          mutation.removedNodes.forEach((node) => {
+            if (node === reminderDiv) {
+              console.log('⚠️ POPUP REMOVED UNEXPECTEDLY at:', new Date().toISOString());
+              console.trace('Removal stack trace:');
+            }
+          });
+        }
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Add event delegation for close button
+    reminderDiv.addEventListener('click', (e) => {
+      if (e.target.getAttribute('data-action') === 'close') {
+        console.log('Close button clicked, removing popup');
         reminderDiv.remove();
       }
-    }, 15000);
+    });
+
+    // Popup will only close when user clicks "Got it, thanks!" button
   }
 
   // Extract pricing information from the page
@@ -1235,6 +1252,7 @@
       }
     });
     console.log('Session storage cleared for OverlapAlert');
+    console.log('Now refresh the page to see the popup again');
   };
 
   // Show current session state for debugging

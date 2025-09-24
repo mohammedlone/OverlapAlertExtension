@@ -1,4 +1,4 @@
-# OverlapAlert - Smart Subscription Monitoring
+# OverlapAlertExtension - Smart Subscription Monitoring
 
 A Chrome extension that intelligently detects and warns users about potential subscription service overlaps when visiting pricing pages.
 
@@ -142,4 +142,4 @@ Feel free to submit issues, feature requests, or pull requests to improve Overla
 
 ---
 
-**OverlapAlert** - Never pay for duplicate subscriptions again! ⚡
+**OverlapAlertExtension** - Never pay for duplicate subscriptions again! ⚡
