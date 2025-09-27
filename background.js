@@ -211,6 +211,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       default:
         console.warn('Unknown action requested:', request.action);
         sendResponse({ error: 'Unknown action: ' + request.action });
+    }
+  } catch (error) {
+    console.error('Error in message listener:', error);
+    sendResponse({ error: 'Internal server error' });
   }
 });
 
