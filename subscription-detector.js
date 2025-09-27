@@ -154,36 +154,60 @@ class ClaudeDetector extends BaseDetector {
 
     detect(document) {
         try {
-            // Look for current plan information
-            const currentPlanElement = this.findCurrentPlanElement(document);
-            if (!currentPlanElement) return null;
+            console.log('🔍 ClaudeDetector: Starting detection...');
+            
+            // First, try to find current plan information
+            let currentPlanElement = this.findCurrentPlanElement(document);
+            let planText = currentPlanElement ? currentPlanElement.textContent || '' : '';
+            
+            // If no current plan found, try to find any pricing information on the page
+            if (!currentPlanElement || !planText.includes('$')) {
+                console.log('🔍 ClaudeDetector: No current plan found, searching entire page...');
+                const pageText = document.body.textContent || '';
+                
+                // Look for pricing patterns in the entire page
+                if (pageText.includes('$') && (pageText.includes('Pro') || pageText.includes('Max'))) {
+                    planText = pageText;
+                    console.log('🔍 ClaudeDetector: Found pricing info in page text');
+                }
+            }
 
             // Extract plan details
-            const planText = currentPlanElement.textContent || '';
             const price = this.extractPrice(planText);
             const billingPeriod = this.extractBillingPeriod(planText);
             const planType = this.extractPlanType(planText);
 
-            // Look for usage information
-            const usageInfo = this.extractUsageInfo(document);
+            console.log('🔍 ClaudeDetector: Extracted data:', { price, billingPeriod, planType });
 
-            // Look for plan features
-            const features = this.extractFeatures(document);
+            // If we found a price, proceed with detection
+            if (price) {
+                // Look for usage information
+                const usageInfo = this.extractUsageInfo(document);
 
-            return {
-                serviceName: 'Claude',
-                category: 'AI Writing',
-                monthlyCost: price ? price.toString() : null,
-                planType: planType,
-                billingPeriod: billingPeriod,
-                currentPlan: true,
-                detectedFrom: 'pricing_page',
-                usageInfo: usageInfo,
-                features: features,
-                lastDetected: new Date().toISOString()
-            };
+                // Look for plan features
+                const features = this.extractFeatures(document);
+
+                const result = {
+                    serviceName: 'Claude',
+                    category: 'AI Writing',
+                    monthlyCost: price.toString(),
+                    planType: planType,
+                    billingPeriod: billingPeriod,
+                    currentPlan: planText.toLowerCase().includes('current') || planText.toLowerCase().includes('you are'),
+                    detectedFrom: 'claude_pricing_page',
+                    usageInfo: usageInfo,
+                    features: features,
+                    lastDetected: new Date().toISOString()
+                };
+                
+                console.log('✅ ClaudeDetector: Detection successful:', result);
+                return result;
+            }
+
+            console.log('❌ ClaudeDetector: No price found in:', planText.substring(0, 200));
+            return null;
         } catch (error) {
-            console.error('ClaudeDetector error:', error);
+            console.error('❌ ClaudeDetector error:', error);
             return null;
         }
     }
@@ -211,12 +235,22 @@ class ClaudeDetector extends BaseDetector {
             }
         }
 
-        // Fallback: look for price elements near plan indicators
+        // Enhanced fallback: look for price elements and plan cards
         const priceElements = document.querySelectorAll('[class*="price"], [class*="cost"], [class*="amount"]');
         for (const element of priceElements) {
             const parent = element.closest('[class*="plan"], [class*="card"], [class*="option"]');
-            if (parent && parent.textContent.toLowerCase().includes('pro') || parent.textContent.toLowerCase().includes('max')) {
+            if (parent && (parent.textContent.toLowerCase().includes('pro') || parent.textContent.toLowerCase().includes('max'))) {
                 return parent;
+            }
+        }
+
+        // Additional fallback: look for any element containing pricing information
+        const allElements = document.querySelectorAll('*');
+        for (const element of allElements) {
+            const text = element.textContent || '';
+            if (text.includes('$') && (text.includes('month') || text.includes('billed')) && 
+                (text.includes('Pro') || text.includes('Max') || text.includes('Claude'))) {
+                return element;
             }
         }
 

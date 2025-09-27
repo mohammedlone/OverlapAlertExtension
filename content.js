@@ -22,30 +22,38 @@
     try {
       console.log('🔍 Starting subscription detection...');
       
-      const detector = new SubscriptionDetector();
-      const detectedData = detector.detectSubscription(window.location.href, document);
-      
-      if (detectedData) {
-        console.log('✅ Subscription detected:', detectedData);
-        
-        // Send detected data to background script for storage
-        if (chrome && chrome.runtime && chrome.runtime.sendMessage) {
-          chrome.runtime.sendMessage({
-            action: 'storeDetectedSubscription',
-            subscriptionData: detectedData
-          }, (response) => {
-            if (response && response.success) {
-              console.log('✅ Subscription data stored successfully');
-              // Show a subtle notification that data was detected
-              showDetectionNotification(detectedData);
-            } else {
-              console.error('❌ Failed to store subscription data:', response?.error);
+      // Add a small delay to ensure page is fully loaded
+      setTimeout(() => {
+        try {
+          const detector = new SubscriptionDetector();
+          const detectedData = detector.detectSubscription(window.location.href, document);
+          
+          if (detectedData) {
+            console.log('✅ Subscription detected:', detectedData);
+            
+            // Send detected data to background script for storage
+            if (chrome && chrome.runtime && chrome.runtime.sendMessage) {
+              chrome.runtime.sendMessage({
+                action: 'storeDetectedSubscription',
+                subscriptionData: detectedData
+              }, (response) => {
+                if (response && response.success) {
+                  console.log('✅ Subscription data stored successfully');
+                  // Show a subtle notification that data was detected
+                  showDetectionNotification(detectedData);
+                } else {
+                  console.error('❌ Failed to store subscription data:', response?.error);
+                }
+              });
             }
-          });
+          } else {
+            console.log('❌ No subscription detected on this page');
+          }
+        } catch (error) {
+          console.error('❌ Error in delayed subscription detection:', error);
         }
-      } else {
-        console.log('❌ No subscription detected on this page');
-      }
+      }, 1000); // 1 second delay
+      
     } catch (error) {
       console.error('❌ Error in subscription detection:', error);
     }
