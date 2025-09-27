@@ -292,9 +292,33 @@ class NetflixDetector extends BaseDetector {
     }
 
     detect(document) {
-        // Implementation for Netflix detection
-        // This would parse Netflix pricing pages
-        return null; // Placeholder
+        try {
+            // Look for Netflix plan information
+            const planElements = document.querySelectorAll('[class*="plan"], [data-testid*="plan"]');
+            
+            for (const element of planElements) {
+                const text = element.textContent || '';
+                const price = this.extractPrice(text);
+                
+                if (price && (text.includes('Standard') || text.includes('Premium') || text.includes('Basic'))) {
+                    return {
+                        serviceName: 'Netflix',
+                        category: 'Entertainment',
+                        monthlyCost: price.toString(),
+                        planType: this.extractPlanType(text),
+                        billingPeriod: this.extractBillingPeriod(text),
+                        currentPlan: text.includes('current') || text.includes('selected'),
+                        detectedFrom: 'netflix_pricing_page',
+                        lastDetected: new Date().toISOString()
+                    };
+                }
+            }
+            
+            return null;
+        } catch (error) {
+            console.error('NetflixDetector error:', error);
+            return null;
+        }
     }
 }
 
@@ -312,8 +336,33 @@ class SpotifyDetector extends BaseDetector {
     }
 
     detect(document) {
-        // Implementation for Spotify detection
-        return null; // Placeholder
+        try {
+            // Look for Spotify Premium information
+            const premiumElements = document.querySelectorAll('[class*="premium"], [class*="plan"]');
+            
+            for (const element of premiumElements) {
+                const text = element.textContent || '';
+                const price = this.extractPrice(text);
+                
+                if (price && (text.includes('Premium') || text.includes('Individual') || text.includes('Family'))) {
+                    return {
+                        serviceName: 'Spotify Premium',
+                        category: 'Entertainment',
+                        monthlyCost: price.toString(),
+                        planType: this.extractPlanType(text),
+                        billingPeriod: this.extractBillingPeriod(text),
+                        currentPlan: text.includes('current') || text.includes('selected'),
+                        detectedFrom: 'spotify_pricing_page',
+                        lastDetected: new Date().toISOString()
+                    };
+                }
+            }
+            
+            return null;
+        } catch (error) {
+            console.error('SpotifyDetector error:', error);
+            return null;
+        }
     }
 }
 
@@ -356,53 +405,309 @@ class MicrosoftDetector extends BaseDetector {
 }
 
 /**
- * Generic Detector for unknown services
+ * Generic Detector for unknown services - Works on ANY website
  */
 class GenericDetector extends BaseDetector {
     constructor() {
         super('Generic', [
             // This will match any URL that might be a pricing page
-            /.*(?:pricing|plans|upgrade|subscription|billing).*/
+            /.*(?:pricing|plans|upgrade|subscription|billing|cost|price).*/
         ]);
     }
 
     detect(document) {
-        // Generic detection logic for unknown services
-        // Look for common pricing patterns
-        const priceElements = document.querySelectorAll('[class*="price"], [class*="cost"], [data-testid*="price"]');
+        console.log('🔍 GenericDetector: Analyzing page for subscription data...');
         
-        if (priceElements.length > 0) {
-            // Try to extract service name from page title or headings
-            const serviceName = this.extractServiceName(document);
-            const price = this.extractPrice(priceElements[0].textContent);
-            
-            if (serviceName && price) {
-                return {
-                    serviceName: serviceName,
-                    category: 'Other',
-                    monthlyCost: price.toString(),
-                    planType: 'Standard',
-                    billingPeriod: 'monthly',
-                    currentPlan: false,
-                    detectedFrom: 'generic_pricing_page',
-                    lastDetected: new Date().toISOString()
-                };
+        // Enhanced detection logic for any website
+        const detectionResults = [];
+        
+        // 1. Look for pricing cards/sections
+        const pricingCards = this.findPricingCards(document);
+        detectionResults.push(...pricingCards);
+        
+        // 2. Look for subscription tables
+        const subscriptionTables = this.findSubscriptionTables(document);
+        detectionResults.push(...subscriptionTables);
+        
+        // 3. Look for plan comparisons
+        const planComparisons = this.findPlanComparisons(document);
+        detectionResults.push(...planComparisons);
+        
+        // 4. Look for current plan indicators
+        const currentPlans = this.findCurrentPlans(document);
+        detectionResults.push(...currentPlans);
+        
+        // Return the best match
+        if (detectionResults.length > 0) {
+            const bestMatch = detectionResults[0]; // First match is usually the most relevant
+            console.log('✅ GenericDetector: Found subscription data:', bestMatch);
+            return bestMatch;
+        }
+        
+        console.log('❌ GenericDetector: No subscription data found');
+        return null;
+    }
+
+    findPricingCards(document) {
+        const results = [];
+        
+        // Look for common pricing card selectors
+        const cardSelectors = [
+            '[class*="plan"]',
+            '[class*="pricing"]',
+            '[class*="subscription"]',
+            '[class*="tier"]',
+            '[data-testid*="plan"]',
+            '[data-testid*="pricing"]',
+            '.plan-card',
+            '.pricing-card',
+            '.subscription-card',
+            '.tier-card'
+        ];
+        
+        for (const selector of cardSelectors) {
+            const cards = document.querySelectorAll(selector);
+            for (const card of cards) {
+                const result = this.extractFromCard(card);
+                if (result) results.push(result);
             }
+        }
+        
+        return results;
+    }
+
+    findSubscriptionTables(document) {
+        const results = [];
+        
+        // Look for pricing tables
+        const tables = document.querySelectorAll('table');
+        for (const table of tables) {
+            const result = this.extractFromTable(table);
+            if (result) results.push(result);
+        }
+        
+        return results;
+    }
+
+    findPlanComparisons(document) {
+        const results = [];
+        
+        // Look for plan comparison sections
+        const comparisonSelectors = [
+            '[class*="comparison"]',
+            '[class*="compare"]',
+            '.plan-comparison',
+            '.pricing-comparison'
+        ];
+        
+        for (const selector of comparisonSelectors) {
+            const sections = document.querySelectorAll(selector);
+            for (const section of sections) {
+                const result = this.extractFromComparison(section);
+                if (result) results.push(result);
+            }
+        }
+        
+        return results;
+    }
+
+    findCurrentPlans(document) {
+        const results = [];
+        
+        // Look for current plan indicators
+        const currentPlanSelectors = [
+            '[class*="current"]',
+            '[class*="active"]',
+            '[class*="selected"]',
+            '.current-plan',
+            '.active-plan',
+            '.selected-plan'
+        ];
+        
+        for (const selector of currentPlanSelectors) {
+            const elements = document.querySelectorAll(selector);
+            for (const element of elements) {
+                const result = this.extractFromCurrentPlan(element);
+                if (result) {
+                    result.currentPlan = true;
+                    results.push(result);
+                }
+            }
+        }
+        
+        return results;
+    }
+
+    extractFromCard(card) {
+        const text = card.textContent || '';
+        const price = this.extractPrice(text);
+        const planType = this.extractPlanType(text);
+        const billingPeriod = this.extractBillingPeriod(text);
+        
+        if (price) {
+            return {
+                serviceName: this.extractServiceName(document),
+                category: this.categorizeService(text),
+                monthlyCost: price.toString(),
+                planType: planType,
+                billingPeriod: billingPeriod,
+                currentPlan: false,
+                detectedFrom: 'generic_pricing_card',
+                features: this.extractFeaturesFromText(text),
+                lastDetected: new Date().toISOString()
+            };
         }
         
         return null;
     }
 
-    extractServiceName(document) {
-        // Try to get service name from title or main heading
-        const title = document.title || '';
-        const h1 = document.querySelector('h1');
-        const h2 = document.querySelector('h2');
+    extractFromTable(table) {
+        const rows = table.querySelectorAll('tr');
+        for (const row of rows) {
+            const cells = row.querySelectorAll('td, th');
+            for (const cell of cells) {
+                const text = cell.textContent || '';
+                const price = this.extractPrice(text);
+                if (price) {
+                    return {
+                        serviceName: this.extractServiceName(document),
+                        category: this.categorizeService(text),
+                        monthlyCost: price.toString(),
+                        planType: this.extractPlanType(text),
+                        billingPeriod: this.extractBillingPeriod(text),
+                        currentPlan: false,
+                        detectedFrom: 'generic_pricing_table',
+                        lastDetected: new Date().toISOString()
+                    };
+                }
+            }
+        }
+        return null;
+    }
+
+    extractFromComparison(comparison) {
+        const text = comparison.textContent || '';
+        const price = this.extractPrice(text);
         
-        const text = h1?.textContent || h2?.textContent || title;
-        if (text) {
-            // Clean up the text to get service name
-            return text.replace(/pricing|plans|upgrade|subscription/gi, '').trim().split(' ')[0];
+        if (price) {
+            return {
+                serviceName: this.extractServiceName(document),
+                category: this.categorizeService(text),
+                monthlyCost: price.toString(),
+                planType: this.extractPlanType(text),
+                billingPeriod: this.extractBillingPeriod(text),
+                currentPlan: false,
+                detectedFrom: 'generic_plan_comparison',
+                features: this.extractFeaturesFromText(text),
+                lastDetected: new Date().toISOString()
+            };
+        }
+        
+        return null;
+    }
+
+    extractFromCurrentPlan(element) {
+        const text = element.textContent || '';
+        const price = this.extractPrice(text);
+        
+        if (price) {
+            return {
+                serviceName: this.extractServiceName(document),
+                category: this.categorizeService(text),
+                monthlyCost: price.toString(),
+                planType: this.extractPlanType(text),
+                billingPeriod: this.extractBillingPeriod(text),
+                currentPlan: true,
+                detectedFrom: 'generic_current_plan',
+                lastDetected: new Date().toISOString()
+            };
+        }
+        
+        return null;
+    }
+
+    categorizeService(text) {
+        const lowerText = text.toLowerCase();
+        
+        // AI/ML Services
+        if (lowerText.includes('ai') || lowerText.includes('artificial intelligence') || 
+            lowerText.includes('machine learning') || lowerText.includes('gpt') || 
+            lowerText.includes('claude') || lowerText.includes('chatbot')) {
+            return 'AI Writing';
+        }
+        
+        // Entertainment
+        if (lowerText.includes('streaming') || lowerText.includes('video') || 
+            lowerText.includes('movie') || lowerText.includes('tv') || 
+            lowerText.includes('music') || lowerText.includes('podcast')) {
+            return 'Entertainment';
+        }
+        
+        // Productivity
+        if (lowerText.includes('office') || lowerText.includes('productivity') || 
+            lowerText.includes('collaboration') || lowerText.includes('workspace')) {
+            return 'Productivity';
+        }
+        
+        // Design
+        if (lowerText.includes('design') || lowerText.includes('creative') || 
+            lowerText.includes('photo') || lowerText.includes('video editing')) {
+            return 'Design';
+        }
+        
+        // Development
+        if (lowerText.includes('code') || lowerText.includes('development') || 
+            lowerText.includes('programming') || lowerText.includes('github')) {
+            return 'Development';
+        }
+        
+        // Analytics
+        if (lowerText.includes('analytics') || lowerText.includes('data') || 
+            lowerText.includes('tracking') || lowerText.includes('metrics')) {
+            return 'Analytics';
+        }
+        
+        return 'Other';
+    }
+
+    extractFeaturesFromText(text) {
+        const features = [];
+        const sentences = text.split(/[.!?]/);
+        
+        for (const sentence of sentences) {
+            const trimmed = sentence.trim();
+            if (trimmed.length > 10 && trimmed.length < 100) {
+                // Look for feature-like text
+                if (trimmed.includes('unlimited') || trimmed.includes('access') || 
+                    trimmed.includes('includes') || trimmed.includes('features') ||
+                    trimmed.includes('storage') || trimmed.includes('users')) {
+                    features.push(trimmed);
+                }
+            }
+        }
+        
+        return features.slice(0, 5); // Limit to 5 features
+    }
+
+    extractServiceName(document) {
+        // Try multiple methods to get service name
+        const methods = [
+            () => document.title?.split(' - ')[0]?.split(' | ')[0],
+            () => document.querySelector('h1')?.textContent?.trim(),
+            () => document.querySelector('[class*="logo"]')?.textContent?.trim(),
+            () => document.querySelector('[class*="brand"]')?.textContent?.trim(),
+            () => window.location.hostname.replace('www.', '').split('.')[0]
+        ];
+        
+        for (const method of methods) {
+            try {
+                const name = method();
+                if (name && name.length > 2 && name.length < 50) {
+                    return name.replace(/pricing|plans|upgrade|subscription|billing/gi, '').trim();
+                }
+            } catch (error) {
+                continue;
+            }
         }
         
         return 'Unknown Service';
