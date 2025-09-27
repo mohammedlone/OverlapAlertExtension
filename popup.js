@@ -1,13 +1,18 @@
 // Popup JavaScript for OverlapAlert extension
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize popup
-    init();
-    
-    // Set up event listeners
-    setupEventListeners();
-    
-    // Load data
-    loadData();
+    try {
+        // Initialize popup
+        init();
+        
+        // Set up event listeners
+        setupEventListeners();
+        
+        // Load data
+        loadData();
+    } catch (error) {
+        console.error('Error initializing popup:', error);
+        showUserFriendlyError('Failed to initialize extension. Please reload the page.');
+    }
 });
 
 function init() {
@@ -509,17 +514,41 @@ function hideAddSubscriptionModal() {
 }
 
 async function saveSubscription(event) {
-    event.preventDefault();
-    
-    const serviceName = document.getElementById('serviceName').value.trim();
-    const category = document.getElementById('category').value;
-    const monthlyCost = document.getElementById('monthlyCost').value;
-    const notes = document.getElementById('notes').value.trim();
-    
-    if (!serviceName || !category) {
-        showNotification('Please fill in all required fields');
-        return;
-    }
+    try {
+        event.preventDefault();
+        
+        // Check Chrome API availability
+        if (!checkChromeAPI()) return;
+        
+        // Sanitize and validate inputs
+        const serviceName = sanitizeInput(document.getElementById('serviceName').value);
+        const category = sanitizeInput(document.getElementById('category').value);
+        const monthlyCost = sanitizeInput(document.getElementById('monthlyCost').value);
+        const notes = sanitizeInput(document.getElementById('notes').value);
+        
+        // Validate inputs
+        const serviceValidation = validateServiceName(serviceName);
+        if (!serviceValidation.valid) {
+            showUserFriendlyError(serviceValidation.error);
+            return;
+        }
+        
+        if (!category) {
+            showUserFriendlyError('Please select a category');
+            return;
+        }
+        
+        const costValidation = validateMonthlyCost(monthlyCost);
+        if (!costValidation.valid) {
+            showUserFriendlyError(costValidation.error);
+            return;
+        }
+        
+        const notesValidation = validateNotes(notes);
+        if (!notesValidation.valid) {
+            showUserFriendlyError(notesValidation.error);
+            return;
+        }
     
     try {
         // Get current subscriptions
@@ -589,3 +618,88 @@ async function removeSubscription(serviceName, category) {
 const styleSheet = document.createElement('style');
 styleSheet.textContent = additionalStyles;
 document.head.appendChild(styleSheet);
+
+// Input validation and sanitization functions
+function sanitizeInput(input) {
+    if (typeof input !== 'string') return '';
+    
+    // Remove potentially dangerous characters
+    return input
+        .replace(/[<>\"']/g, '') // Remove HTML/script injection characters
+        .replace(/javascript:/gi, '') // Remove javascript: protocol
+        .trim();
+}
+
+function validateServiceName(name) {
+    if (!name || typeof name !== 'string') return { valid: false, error: 'Service name is required' };
+    
+    const trimmed = name.trim();
+    if (trimmed.length < 2) return { valid: false, error: 'Service name must be at least 2 characters' };
+    if (trimmed.length > 50) return { valid: false, error: 'Service name cannot exceed 50 characters' };
+    if (!/^[a-zA-Z0-9\s\-\.&]+$/.test(trimmed)) {
+        return { valid: false, error: 'Service name contains invalid characters. Only letters, numbers, spaces, hyphens, dots, and ampersands are allowed' };
+    }
+    
+    return { valid: true };
+}
+
+function validateMonthlyCost(cost) {
+    if (!cost) return { valid: true }; // Optional field
+    
+    const numCost = parseFloat(cost);
+    if (isNaN(numCost)) return { valid: false, error: 'Monthly cost must be a valid number' };
+    if (numCost < 0) return { valid: false, error: 'Monthly cost cannot be negative' };
+    if (numCost > 10000) return { valid: false, error: 'Monthly cost cannot exceed $10,000' };
+    
+    return { valid: true };
+}
+
+function validateNotes(notes) {
+    if (!notes) return { valid: true }; // Optional field
+    
+    if (notes.length > 500) return { valid: false, error: 'Notes cannot exceed 500 characters' };
+    
+    return { valid: true };
+}
+
+// User-friendly error display
+function showUserFriendlyError(message) {
+    // Create a more user-friendly error display
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'user-error-notification';
+    errorDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #ff4444;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 10000;
+        max-width: 300px;
+        text-align: center;
+        font-size: 14px;
+        line-height: 1.4;
+    `;
+    errorDiv.textContent = message;
+    
+    document.body.appendChild(errorDiv);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (errorDiv.parentNode) {
+            errorDiv.parentNode.removeChild(errorDiv);
+        }
+    }, 5000);
+}
+
+// Check Chrome API availability
+function checkChromeAPI() {
+    if (!chrome || !chrome.runtime || !chrome.storage) {
+        showUserFriendlyError('Chrome extension APIs not available. Please refresh the page.');
+        return false;
+    }
+    return true;
+}

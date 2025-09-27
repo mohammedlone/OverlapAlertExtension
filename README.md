@@ -12,9 +12,9 @@ A Chrome extension that intelligently detects and warns users about potential su
 
 ## 🎨 Design
 
-- **Light Green Theme**: Fresh, modern interface with green gradients
+- **Black & Yellow Theme**: Professional interface with golden lightning bolt on dark background
 - **Lightning Bolt Logo**: ⚡ Represents fast detection and alerts
-- **Clean UI**: Professional, minimalist design
+- **Clean UI**: Professional, minimalist design with high contrast
 - **Responsive**: Works on all screen sizes
 
 ## 📁 Project Structure
@@ -80,18 +80,43 @@ Edit `subscription-database.js` to add new services:
 - **Session Behavior**: Adjust popup logic in `content.js`
 - **Styling**: Customize theme in `styles.css`
 
+## 💰 Pricing & Features
+
+### Free Tier (Always Free)
+- ✅ Basic overlap detection
+- ✅ Manual subscription management
+- ✅ Up to 5 active subscriptions
+- ✅ Basic usage tracking
+- ✅ Essential overlap warnings
+
+### Premium Tier ($4.99/month or $49.99/year)
+- ✅ Unlimited subscriptions
+- ✅ Advanced analytics & insights
+- ✅ Cloud sync across devices
+- ✅ Export/import subscription data
+- ✅ Price comparison tools
+- ✅ Renewal reminders
+- ✅ Bulk subscription management
+- ✅ Priority customer support
+
+### 14-Day Free Trial
+- Try all premium features for 14 days
+- No credit card required to start
+- Easy cancellation anytime
+- Upgrade or downgrade anytime
+
 ## 🎨 Customization
 
 ### Theme Colors
-- **Primary Green**: `#52c41a`
-- **Secondary Green**: `#389e0d`
-- **Light Green Background**: `#f6ffed`
-- **Accent Colors**: Various shades of green throughout
+- **Primary Gold**: `#FFD700` (Lightning bolt color)
+- **Secondary Gold**: `#FFA500` (Accent gradients)
+- **Background Black**: `#1a1a1a` (Header background)
+- **Secondary Black**: `#333333` (Gradients)
 
 ### Logo Design
-- **Lightning Bolt**: ⚡ Fast detection symbol
-- **Green Circle**: Matches extension theme
-- **Red Alert Dot**: Warning/notification indicator
+- **Lightning Bolt**: ⚡ Fast detection symbol in golden yellow
+- **Dark Circle**: Professional black background
+- **High Contrast**: Excellent visibility in toolbar
 - **Animated Border**: Pulsing golden effect in popup
 
 ## 🐛 Troubleshooting

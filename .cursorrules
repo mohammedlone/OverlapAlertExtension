@@ -1,0 +1,78 @@
+# Chrome Extension Development Rules for OVERLAPALERT1
+
+## Project Type
+This is a monetized Chrome extension. Always follow security and best practices.
+
+## Critical Rules - ALWAYS Follow These
+
+### Security (Very Important!)
+- NEVER use localStorage for passwords or license keys
+- ALWAYS use chrome.storage.local or chrome.storage.sync instead
+- NEVER put API keys directly in code
+- ALWAYS use HTTPS for any web requests (never HTTP)
+- ALWAYS check if user input is safe before using it
+
+### Chrome Extension Rules
+- Use Manifest V3 (not V2)
+- Service workers instead of background pages
+- Use chrome.storage.local for saving data
+- Don't use eval() or innerHTML with user data
+
+### Monetization (How We Make Money)
+- Be honest and clear about what's free vs paid
+- Don't trick users into paying
+- Make it easy to cancel subscriptions
+- Show value before asking for money
+- Use a free trial period
+
+### Code Quality
+- Add error handling (try-catch) for everything that could fail
+- Use clear variable names (not x, y, z)
+- Add comments only when code is confusing
+- Keep functions small and simple
+- Check for errors after Chrome API calls
+
+### User Experience
+- Show loading messages when things take time
+- Show clear error messages (not "Error 500")
+- Make buttons work with keyboard (Tab key)
+- Don't make popups annoying or too frequent
+- Test on both light and dark mode
+
+## When Writing Code For Me
+
+### Always Include:
+1. Error handling (try-catch blocks)
+2. Comments explaining complex parts
+3. Check if Chrome APIs are available
+4. User-friendly error messages
+5. Loading states for async operations
+
+### Never Include:
+1. Hardcoded passwords or API keys
+2. localStorage for sensitive data
+3. HTTP requests (use HTTPS)
+4. Complicated code without explanation
+5. eval() or Function() constructors
+
+## File Organization
+- background.js = background tasks, license checking
+- content.js = what runs on web pages
+- popup.js = popup window code
+- subscription-database.js = user subscription data
+
+## Before Suggesting Code
+1. Ask if you're not sure what I need
+2. Explain what the code does in simple terms
+3. Warn me if something could be risky
+4. Suggest the simplest solution first
+5. Tell me if I need to install anything
+
+## Testing Reminders
+- Test with free tier users
+- Test with paid tier users  
+- Test what happens when internet is offline
+- Test payment flows
+- Test error cases
+
+Remember: I'm learning, so explain things simply and clearly!
