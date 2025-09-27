@@ -14,7 +14,7 @@ body {
 }
 
 .popup-container {
-  width: 420px;
+  width: 480px !important;
   max-height: 700px;
   background: white;
   border-radius: 16px;
