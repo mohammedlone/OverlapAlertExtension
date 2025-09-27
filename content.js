@@ -841,10 +841,10 @@
           </div>
           ` : ''}
           <div class="overlap-alert-actions">
-            <button class="overlap-alert-btn overlap-alert-btn-primary" onclick="this.closest('#overlap-alert-warning').remove()">
+            <button class="overlap-alert-btn overlap-alert-btn-primary" id="overlap-alert-got-it">
               Got it, thanks!
             </button>
-            <button class="overlap-alert-btn overlap-alert-btn-secondary" onclick="window.open('chrome-extension://' + chrome.runtime.id + '/popup.html', '_blank')">
+            <button class="overlap-alert-btn overlap-alert-btn-secondary" id="overlap-alert-manage">
               Manage Subscriptions
             </button>
           </div>
@@ -1014,6 +1014,61 @@
     // Add to page
     document.head.appendChild(style);
     document.body.appendChild(reminderDiv);
+
+    // Add event listeners for buttons
+    const gotItButton = document.getElementById('overlap-alert-got-it');
+    const manageButton = document.getElementById('overlap-alert-manage');
+    
+    if (gotItButton) {
+      gotItButton.addEventListener('click', function() {
+        console.log('Got it button clicked - closing popup');
+        reminderDiv.remove();
+      });
+    }
+    
+    if (manageButton) {
+      manageButton.addEventListener('click', function() {
+        console.log('Manage subscriptions button clicked');
+        
+        // Close the current popup first
+        reminderDiv.remove();
+        
+        // Show helpful message to user
+        const manageMessage = document.createElement('div');
+        manageMessage.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+          color: #1a1a1a;
+          padding: 16px 20px;
+          border-radius: 12px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+          z-index: 10000;
+          max-width: 300px;
+          font-size: 14px;
+          font-weight: 500;
+          line-height: 1.4;
+        `;
+        
+        manageMessage.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <span style="font-size: 18px;">⚡</span>
+            <strong>Manage Subscriptions</strong>
+          </div>
+          <div>Click the OverlapAlert icon in your browser toolbar to manage your subscriptions and view analytics.</div>
+        `;
+        
+        document.body.appendChild(manageMessage);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+          if (manageMessage.parentNode) {
+            manageMessage.parentNode.removeChild(manageMessage);
+          }
+        }, 5000);
+      });
+    }
 
     // Debug: Log popup creation
     console.log('=== POPUP CREATED ===');

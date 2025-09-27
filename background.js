@@ -208,6 +208,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
         return true;
         
+      case 'openPopup':
+        try {
+          // Open the extension popup by clicking the action button
+          chrome.action.openPopup();
+          sendResponse({ success: true });
+        } catch (error) {
+          console.error('Error opening popup:', error);
+          sendResponse({ error: 'Failed to open popup' });
+        }
+        return true;
+        
       default:
         console.warn('Unknown action requested:', request.action);
         sendResponse({ error: 'Unknown action: ' + request.action });
