@@ -549,8 +549,8 @@ async function saveSubscription(event) {
             showUserFriendlyError(notesValidation.error);
             return;
         }
-    
-    try {
+        
+        try {
         // Get current subscriptions
         const subscriptions = await getSubscriptions();
         
@@ -585,8 +585,12 @@ async function saveSubscription(event) {
             showNotification('Subscription added successfully');
         });
         
+        } catch (error) {
+            console.error('Error saving subscription:', error);
+            showNotification('Failed to save subscription');
+        }
     } catch (error) {
-        console.error('Error saving subscription:', error);
+        console.error('Error in saveSubscription:', error);
         showNotification('Failed to save subscription');
     }
 }
