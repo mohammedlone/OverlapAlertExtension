@@ -322,6 +322,13 @@ function showAnalyticsDashboard() {
                         ${generateTopServices(subscriptions)}
                     </div>
                 </div>
+                
+                <div class="analytics-section">
+                    <h4>🔍 Auto-Detected Services</h4>
+                    <div class="detected-services">
+                        ${generateDetectedServices(subscriptions)}
+                    </div>
+                </div>
             </div>
         `);
         
@@ -347,6 +354,21 @@ function showAnalyticsDashboard() {
             .service-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 8px; background: white; border-radius: 6px; }
             .service-name { font-weight: 500; }
             .service-cost { color: #dc3545; font-weight: bold; }
+            .detected-services { background: #f8f9fa; padding: 16px; border-radius: 8px; }
+            .detected-service-item { background: white; border-radius: 6px; padding: 12px; margin-bottom: 12px; border-left: 4px solid #FFD700; }
+            .detected-service-item:last-child { margin-bottom: 0; }
+            .detected-service-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+            .detected-service-name { font-weight: bold; font-size: 16px; }
+            .detected-badge { background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+            .detected-service-details { display: flex; gap: 12px; margin-bottom: 4px; }
+            .detected-plan { font-size: 14px; color: #6c757d; }
+            .detected-cost { font-size: 14px; color: #dc3545; font-weight: bold; }
+            .detected-period { font-size: 14px; color: #6c757d; }
+            .detected-service-source { font-size: 12px; color: #6c757d; }
+            .no-detected { text-align: center; padding: 20px; }
+            .no-detected-icon { font-size: 32px; margin-bottom: 12px; }
+            .no-detected-text strong { display: block; margin-bottom: 4px; }
+            .no-detected-text small { color: #6c757d; }
         `);
     });
 }
@@ -431,6 +453,39 @@ function generateTopServices(subscriptions) {
                 <span class="service-cost">$${sub.monthlyCost}/month</span>
             </div>
         `).join('');
+}
+
+function generateDetectedServices(subscriptions) {
+    const detectedServices = subscriptions.filter(sub => sub.autoDetected);
+    
+    if (detectedServices.length === 0) {
+        return `
+            <div class="no-detected">
+                <div class="no-detected-icon">🔍</div>
+                <div class="no-detected-text">
+                    <strong>No auto-detected services yet</strong>
+                    <small>Visit pricing pages to automatically detect subscription details</small>
+                </div>
+            </div>
+        `;
+    }
+    
+    return detectedServices.map(sub => `
+        <div class="detected-service-item">
+            <div class="detected-service-header">
+                <span class="detected-service-name">${sub.serviceName}</span>
+                <span class="detected-badge">Auto-detected</span>
+            </div>
+            <div class="detected-service-details">
+                <span class="detected-plan">${sub.planType} Plan</span>
+                <span class="detected-cost">$${sub.monthlyCost}/month</span>
+                <span class="detected-period">${sub.billingPeriod}</span>
+            </div>
+            <div class="detected-service-source">
+                <small>Detected from: ${sub.detectedFrom}</small>
+            </div>
+        </div>
+    `).join('');
 }
 
 function createModal(title, content) {

@@ -192,21 +192,93 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
         return true;
         
-      case 'clearData':
-        chrome.storage.local.clear(() => {
-          try {
-            if (chrome.runtime.lastError) {
-              console.error('Error clearing data:', chrome.runtime.lastError);
-              sendResponse({ error: 'Failed to clear data' });
-              return;
-            }
-            sendResponse({ success: true });
-          } catch (error) {
-            console.error('Error processing clearData:', error);
-            sendResponse({ error: 'Failed to process data clearing' });
-          }
-        });
-        return true;
+              case 'clearData':
+                chrome.storage.local.clear(() => {
+                  try {
+                    if (chrome.runtime.lastError) {
+                      console.error('Error clearing data:', chrome.runtime.lastError);
+                      sendResponse({ error: 'Failed to clear data' });
+                      return;
+                    }
+                    sendResponse({ success: true });
+                  } catch (error) {
+                    console.error('Error processing clearData:', error);
+                    sendResponse({ error: 'Failed to process data clearing' });
+                  }
+                });
+                return true;
+                
+              case 'storeDetectedSubscription':
+                // Validate subscription data
+                if (!request.subscriptionData || !request.subscriptionData.serviceName) {
+                  sendResponse({ error: 'Invalid subscription data format' });
+                  return;
+                }
+                
+                chrome.storage.local.get(['userSubscriptions'], (result) => {
+                  try {
+                    if (chrome.runtime.lastError) {
+                      console.error('Error getting subscriptions for detected data:', chrome.runtime.lastError);
+                      sendResponse({ error: 'Failed to retrieve subscriptions' });
+                      return;
+                    }
+                    
+                    const userSubscriptions = result.userSubscriptions || [];
+                    const detectedData = request.subscriptionData;
+                    
+                    // Check if subscription already exists
+                    const existingIndex = userSubscriptions.findIndex(sub => 
+                      sub.serviceName === detectedData.serviceName && sub.category === detectedData.category
+                    );
+                    
+                    if (existingIndex >= 0) {
+                      // Update existing subscription with detected data
+                      const existing = userSubscriptions[existingIndex];
+                      userSubscriptions[existingIndex] = {
+                        ...existing,
+                        monthlyCost: detectedData.monthlyCost || existing.monthlyCost,
+                        planType: detectedData.planType || existing.planType,
+                        billingPeriod: detectedData.billingPeriod || existing.billingPeriod,
+                        detectedFrom: detectedData.detectedFrom,
+                        lastDetected: detectedData.lastDetected,
+                        autoDetected: true
+                      };
+                      console.log('Updated existing subscription with detected data:', detectedData.serviceName);
+                    } else {
+                      // Add new subscription
+                      const newSubscription = {
+                        serviceName: detectedData.serviceName,
+                        category: detectedData.category || 'Other',
+                        monthlyCost: detectedData.monthlyCost || '0.00',
+                        planType: detectedData.planType || 'Standard',
+                        billingPeriod: detectedData.billingPeriod || 'monthly',
+                        notes: `Auto-detected from ${detectedData.detectedFrom}`,
+                        firstUsed: new Date().toISOString(),
+                        lastUsed: new Date().toISOString(),
+                        usageCount: 0,
+                        detectedFrom: detectedData.detectedFrom,
+                        lastDetected: detectedData.lastDetected,
+                        autoDetected: true
+                      };
+                      userSubscriptions.push(newSubscription);
+                      console.log('Added new auto-detected subscription:', detectedData.serviceName);
+                    }
+                    
+                    chrome.storage.local.set({ userSubscriptions }, () => {
+                      if (chrome.runtime.lastError) {
+                        console.error('Error storing detected subscription:', chrome.runtime.lastError);
+                        sendResponse({ error: 'Failed to store detected subscription' });
+                        return;
+                      }
+                      console.log('Successfully stored detected subscription data');
+                      sendResponse({ success: true, count: userSubscriptions.length });
+                    });
+                  } catch (error) {
+                    console.error('Error processing storeDetectedSubscription:', error);
+                    sendResponse({ error: 'Failed to process subscription storage' });
+                  }
+                });
+                return true;
         
       case 'openPopup':
         try {

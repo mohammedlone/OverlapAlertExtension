@@ -14,10 +14,98 @@
   // Import subscription database functions
   const { isSubscriptionPage, getServiceByDomain, findPotentialOverlaps } = window.subscriptionDatabase || {};
 
+  // Import subscription detector
+  const SubscriptionDetector = window.SubscriptionDetector;
+
+  // Subscription detection function
+  function detectAndStoreSubscriptionDetails() {
+    try {
+      console.log('🔍 Starting subscription detection...');
+      
+      const detector = new SubscriptionDetector();
+      const detectedData = detector.detectSubscription(window.location.href, document);
+      
+      if (detectedData) {
+        console.log('✅ Subscription detected:', detectedData);
+        
+        // Send detected data to background script for storage
+        if (chrome && chrome.runtime && chrome.runtime.sendMessage) {
+          chrome.runtime.sendMessage({
+            action: 'storeDetectedSubscription',
+            subscriptionData: detectedData
+          }, (response) => {
+            if (response && response.success) {
+              console.log('✅ Subscription data stored successfully');
+              // Show a subtle notification that data was detected
+              showDetectionNotification(detectedData);
+            } else {
+              console.error('❌ Failed to store subscription data:', response?.error);
+            }
+          });
+        }
+      } else {
+        console.log('❌ No subscription detected on this page');
+      }
+    } catch (error) {
+      console.error('❌ Error in subscription detection:', error);
+    }
+  }
+
+  // Show notification when subscription is detected
+  function showDetectionNotification(detectedData) {
+    try {
+      // Create a subtle notification
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        color: #1a1a1a;
+        padding: 12px 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        z-index: 10000;
+        font-size: 14px;
+        font-weight: 500;
+        max-width: 300px;
+        border: 2px solid #1a1a1a;
+      `;
+      
+      notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+          <span style="font-size: 16px;">⚡</span>
+          <strong>Subscription Detected!</strong>
+        </div>
+        <div style="font-size: 13px;">
+          ${detectedData.serviceName} - ${detectedData.planType} Plan
+          ${detectedData.monthlyCost ? `($${detectedData.monthlyCost}/month)` : ''}
+        </div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // Auto-remove after 4 seconds
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 4000);
+      
+    } catch (error) {
+      console.error('Error showing detection notification:', error);
+    }
+  }
+
   // Smart detection system with session-based popup management
   function checkSubscriptionPage() {
     try {
       const currentUrl = window.location.href;
+      
+      // First, try to detect subscription details from the current page
+      if (SubscriptionDetector) {
+        detectAndStoreSubscriptionDetails();
+      }
       const currentDomain = window.location.hostname;
       
       console.log('Smart detection - Checking page:', currentUrl);
