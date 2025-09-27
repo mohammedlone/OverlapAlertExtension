@@ -240,16 +240,240 @@ function addPremiumFeaturesSection() {
 
 // Global functions for premium features
 function showPremiumFeature(feature) {
-    const messages = {
-        'analytics': 'Advanced Analytics: Get detailed insights into your subscription spending and usage patterns',
-        'cloud-sync': 'Cloud Sync: Sync your subscriptions across all your devices',
-        'export': 'Export/Import: Backup and restore your subscription data',
-        'price-compare': 'Price Comparison: Find better deals and save money with price comparison tools',
-        'reminders': 'Renewal Reminders: Never miss a renewal with smart reminders',
-        'bulk-manage': 'Bulk Management: Manage multiple subscriptions at once'
-    };
+    console.log('Opening premium feature:', feature);
     
-    showNotification(messages[feature] || 'Premium feature coming soon!', 'info');
+    switch(feature) {
+        case 'analytics':
+            showAnalyticsDashboard();
+            break;
+        case 'cloud-sync':
+            showCloudSyncInterface();
+            break;
+        case 'export':
+            showExportInterface();
+            break;
+        case 'price-compare':
+            showPriceComparisonInterface();
+            break;
+        case 'reminders':
+            showRemindersInterface();
+            break;
+        case 'bulk-manage':
+            showBulkManagementInterface();
+            break;
+        default:
+            showNotification('Premium feature coming soon!', 'info');
+    }
+}
+
+function showAnalyticsDashboard() {
+    // Create analytics modal
+    const modal = createModal('📊 Advanced Analytics', `
+        <div class="analytics-dashboard">
+            <div class="analytics-summary">
+                <div class="analytics-card">
+                    <div class="analytics-number">$47.99</div>
+                    <div class="analytics-label">Monthly Spend</div>
+                </div>
+                <div class="analytics-card">
+                    <div class="analytics-number">6</div>
+                    <div class="analytics-label">Active Services</div>
+                </div>
+                <div class="analytics-card">
+                    <div class="analytics-number">$12.50</div>
+                    <div class="analytics-label">Avg. per Service</div>
+                </div>
+            </div>
+            
+            <div class="analytics-section">
+                <h4>📈 Spending Trends</h4>
+                <div class="chart-placeholder">
+                    <div class="chart-bars">
+                        <div class="chart-bar" style="height: 60%"></div>
+                        <div class="chart-bar" style="height: 80%"></div>
+                        <div class="chart-bar" style="height: 45%"></div>
+                        <div class="chart-bar" style="height: 90%"></div>
+                        <div class="chart-bar" style="height: 70%"></div>
+                        <div class="chart-bar" style="height: 85%"></div>
+                    </div>
+                    <div class="chart-labels">
+                        <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="analytics-section">
+                <h4>💡 Smart Insights</h4>
+                <div class="insights-list">
+                    <div class="insight-item">
+                        <span class="insight-icon">💰</span>
+                        <span class="insight-text">You could save $15/month by switching to annual plans</span>
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">⚠️</span>
+                        <span class="insight-text">Netflix and Disney+ have overlapping content</span>
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">📊</span>
+                        <span class="insight-text">Your usage is highest on weekends</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `);
+    
+    // Add analytics-specific styles
+    addModalStyles(`
+        .analytics-dashboard { padding: 20px; }
+        .analytics-summary { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .analytics-card { background: #f8f9fa; padding: 16px; border-radius: 8px; text-align: center; border: 1px solid #e9ecef; }
+        .analytics-number { font-size: 24px; font-weight: bold; color: #FFD700; margin-bottom: 4px; }
+        .analytics-label { font-size: 12px; color: #6c757d; }
+        .analytics-section { margin-bottom: 24px; }
+        .analytics-section h4 { margin: 0 0 12px 0; color: #1a1a1a; }
+        .chart-placeholder { background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; }
+        .chart-bars { display: flex; align-items: end; justify-content: space-around; height: 100px; margin-bottom: 12px; }
+        .chart-bar { width: 20px; background: linear-gradient(to top, #FFD700, #FFA500); border-radius: 2px 2px 0 0; }
+        .chart-labels { display: flex; justify-content: space-around; font-size: 12px; color: #6c757d; }
+        .insights-list { background: #f8f9fa; padding: 16px; border-radius: 8px; }
+        .insight-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 8px; background: white; border-radius: 6px; }
+        .insight-item:last-child { margin-bottom: 0; }
+        .insight-icon { font-size: 18px; }
+        .insight-text { font-size: 14px; color: #1a1a1a; }
+    `);
+}
+
+function createModal(title, content) {
+    // Remove existing modals
+    document.querySelectorAll('.premium-modal').forEach(modal => modal.remove());
+    
+    const modal = document.createElement('div');
+    modal.className = 'premium-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        ">
+            <div class="modal-header" style="
+                padding: 20px 24px;
+                border-bottom: 1px solid #e9ecef;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+                color: #1a1a1a;
+                border-radius: 12px 12px 0 0;
+            ">
+                <h3 style="margin: 0; font-size: 18px; font-weight: bold;">${title}</h3>
+                <button class="modal-close" style="
+                    background: none;
+                    border: none;
+                    font-size: 24px;
+                    cursor: pointer;
+                    color: #1a1a1a;
+                    width: 32px;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 50%;
+                    transition: background-color 0.2s;
+                ">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                ${content}
+            </div>
+        </div>
+    `;
+    
+    // Add close functionality
+    modal.querySelector('.modal-close').addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+    
+    document.body.appendChild(modal);
+    return modal;
+}
+
+function addModalStyles(css) {
+    const style = document.createElement('style');
+    style.textContent = css;
+    document.head.appendChild(style);
+}
+
+// Placeholder functions for other premium features
+function showCloudSyncInterface() {
+    const modal = createModal('☁️ Cloud Sync', `
+        <div style="padding: 20px; text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 16px;">☁️</div>
+            <h4>Cloud Sync Coming Soon!</h4>
+            <p>Sync your subscriptions across all your devices</p>
+            <button class="btn btn-primary" onclick="this.closest('.premium-modal').remove()">Close</button>
+        </div>
+    `);
+}
+
+function showExportInterface() {
+    const modal = createModal('📤 Export/Import', `
+        <div style="padding: 20px; text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 16px;">📤</div>
+            <h4>Export/Import Coming Soon!</h4>
+            <p>Backup and restore your subscription data</p>
+            <button class="btn btn-primary" onclick="this.closest('.premium-modal').remove()">Close</button>
+        </div>
+    `);
+}
+
+function showPriceComparisonInterface() {
+    const modal = createModal('💰 Price Comparison', `
+        <div style="padding: 20px; text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 16px;">💰</div>
+            <h4>Price Comparison Coming Soon!</h4>
+            <p>Find better deals and save money</p>
+            <button class="btn btn-primary" onclick="this.closest('.premium-modal').remove()">Close</button>
+        </div>
+    `);
+}
+
+function showRemindersInterface() {
+    const modal = createModal('🔔 Renewal Reminders', `
+        <div style="padding: 20px; text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 16px;">🔔</div>
+            <h4>Renewal Reminders Coming Soon!</h4>
+            <p>Never miss a renewal with smart reminders</p>
+            <button class="btn btn-primary" onclick="this.closest('.premium-modal').remove()">Close</button>
+        </div>
+    `);
+}
+
+function showBulkManagementInterface() {
+    const modal = createModal('📋 Bulk Management', `
+        <div style="padding: 20px; text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+            <h4>Bulk Management Coming Soon!</h4>
+            <p>Manage multiple subscriptions at once</p>
+            <button class="btn btn-primary" onclick="this.closest('.premium-modal').remove()">Close</button>
+        </div>
+    `);
 }
 
 function startFreeTrial() {
