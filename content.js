@@ -1030,10 +1030,7 @@
       manageButton.addEventListener('click', function() {
         console.log('Manage subscriptions button clicked');
         
-        // Close the current popup first
-        reminderDiv.remove();
-        
-        // Show helpful message to user
+        // Show helpful message to user (keep popup open for 10 seconds)
         const manageMessage = document.createElement('div');
         manageMessage.style.cssText = `
           position: fixed;
@@ -1061,12 +1058,13 @@
         
         document.body.appendChild(manageMessage);
         
-        // Auto-remove after 5 seconds
+        // Close the original popup and remove message after 10 seconds
         setTimeout(() => {
+          reminderDiv.remove();
           if (manageMessage.parentNode) {
             manageMessage.parentNode.removeChild(manageMessage);
           }
-        }, 5000);
+        }, 10000);
       });
     }
 
