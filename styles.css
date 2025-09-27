@@ -15,12 +15,14 @@ body {
 
 .popup-container {
   width: 380px;
-  min-height: 500px;
+  max-height: 600px;
   background: white;
   border-radius: 16px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  overflow-y: auto;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .popup-header {
@@ -113,6 +115,27 @@ body {
 .popup-content {
   padding: 24px;
   background: white;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #FFD700 transparent;
+}
+
+.popup-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.popup-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.popup-content::-webkit-scrollbar-thumb {
+  background: #FFD700;
+  border-radius: 3px;
+}
+
+.popup-content::-webkit-scrollbar-thumb:hover {
+  background: #FFA500;
 }
 
 .stats-grid {
