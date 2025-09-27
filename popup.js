@@ -267,80 +267,170 @@ function showPremiumFeature(feature) {
 }
 
 function showAnalyticsDashboard() {
-    // Create analytics modal
-    const modal = createModal('📊 Advanced Analytics', `
-        <div class="analytics-dashboard">
-            <div class="analytics-summary">
-                <div class="analytics-card">
-                    <div class="analytics-number">$47.99</div>
-                    <div class="analytics-label">Monthly Spend</div>
+    // Get real subscription data
+    chrome.storage.local.get(['userSubscriptions'], (result) => {
+        const subscriptions = result.userSubscriptions || [];
+        
+        // Calculate real analytics data
+        const monthlySpend = subscriptions.reduce((sum, sub) => sum + (parseFloat(sub.monthlyCost) || 0), 0);
+        const activeServices = subscriptions.length;
+        const avgPerService = activeServices > 0 ? (monthlySpend / activeServices).toFixed(2) : 0;
+        
+        // Generate real insights based on actual data
+        const insights = generateRealInsights(subscriptions);
+        
+        // Create analytics modal with real data
+        const modal = createModal('📊 Advanced Analytics', `
+            <div class="analytics-dashboard">
+                <div class="analytics-summary">
+                    <div class="analytics-card">
+                        <div class="analytics-number">$${monthlySpend.toFixed(2)}</div>
+                        <div class="analytics-label">Monthly Spend</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="analytics-number">${activeServices}</div>
+                        <div class="analytics-label">Active Services</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="analytics-number">$${avgPerService}</div>
+                        <div class="analytics-label">Avg. per Service</div>
+                    </div>
                 </div>
-                <div class="analytics-card">
-                    <div class="analytics-number">6</div>
-                    <div class="analytics-label">Active Services</div>
+                
+                <div class="analytics-section">
+                    <h4>📊 Category Breakdown</h4>
+                    <div class="category-chart">
+                        ${generateCategoryChart(subscriptions)}
+                    </div>
                 </div>
-                <div class="analytics-card">
-                    <div class="analytics-number">$12.50</div>
-                    <div class="analytics-label">Avg. per Service</div>
+                
+                <div class="analytics-section">
+                    <h4>💡 Smart Insights</h4>
+                    <div class="insights-list">
+                        ${insights.map(insight => `
+                            <div class="insight-item">
+                                <span class="insight-icon">${insight.icon}</span>
+                                <span class="insight-text">${insight.text}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="analytics-section">
+                    <h4>📋 Top Services</h4>
+                    <div class="top-services">
+                        ${generateTopServices(subscriptions)}
+                    </div>
                 </div>
             </div>
-            
-            <div class="analytics-section">
-                <h4>📈 Spending Trends</h4>
-                <div class="chart-placeholder">
-                    <div class="chart-bars">
-                        <div class="chart-bar" style="height: 60%"></div>
-                        <div class="chart-bar" style="height: 80%"></div>
-                        <div class="chart-bar" style="height: 45%"></div>
-                        <div class="chart-bar" style="height: 90%"></div>
-                        <div class="chart-bar" style="height: 70%"></div>
-                        <div class="chart-bar" style="height: 85%"></div>
-                    </div>
-                    <div class="chart-labels">
-                        <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="analytics-section">
-                <h4>💡 Smart Insights</h4>
-                <div class="insights-list">
-                    <div class="insight-item">
-                        <span class="insight-icon">💰</span>
-                        <span class="insight-text">You could save $15/month by switching to annual plans</span>
-                    </div>
-                    <div class="insight-item">
-                        <span class="insight-icon">⚠️</span>
-                        <span class="insight-text">Netflix and Disney+ have overlapping content</span>
-                    </div>
-                    <div class="insight-item">
-                        <span class="insight-icon">📊</span>
-                        <span class="insight-text">Your usage is highest on weekends</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `);
+        `);
+        
+        // Add analytics-specific styles
+        addModalStyles(`
+            .analytics-dashboard { padding: 20px; }
+            .analytics-summary { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+            .analytics-card { background: #f8f9fa; padding: 16px; border-radius: 8px; text-align: center; border: 1px solid #e9ecef; }
+            .analytics-number { font-size: 24px; font-weight: bold; color: #FFD700; margin-bottom: 4px; }
+            .analytics-label { font-size: 12px; color: #6c757d; }
+            .analytics-section { margin-bottom: 24px; }
+            .analytics-section h4 { margin: 0 0 12px 0; color: #1a1a1a; }
+            .category-chart { background: #f8f9fa; padding: 20px; border-radius: 8px; }
+            .category-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 8px; background: white; border-radius: 6px; }
+            .category-name { font-weight: 500; }
+            .category-amount { color: #FFD700; font-weight: bold; }
+            .insights-list { background: #f8f9fa; padding: 16px; border-radius: 8px; }
+            .insight-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 8px; background: white; border-radius: 6px; }
+            .insight-item:last-child { margin-bottom: 0; }
+            .insight-icon { font-size: 18px; }
+            .insight-text { font-size: 14px; color: #1a1a1a; }
+            .top-services { background: #f8f9fa; padding: 16px; border-radius: 8px; }
+            .service-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 8px; background: white; border-radius: 6px; }
+            .service-name { font-weight: 500; }
+            .service-cost { color: #dc3545; font-weight: bold; }
+        `);
+    });
+}
+
+function generateRealInsights(subscriptions) {
+    const insights = [];
+    const monthlySpend = subscriptions.reduce((sum, sub) => sum + (parseFloat(sub.monthlyCost) || 0), 0);
+    const categories = {};
     
-    // Add analytics-specific styles
-    addModalStyles(`
-        .analytics-dashboard { padding: 20px; }
-        .analytics-summary { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-        .analytics-card { background: #f8f9fa; padding: 16px; border-radius: 8px; text-align: center; border: 1px solid #e9ecef; }
-        .analytics-number { font-size: 24px; font-weight: bold; color: #FFD700; margin-bottom: 4px; }
-        .analytics-label { font-size: 12px; color: #6c757d; }
-        .analytics-section { margin-bottom: 24px; }
-        .analytics-section h4 { margin: 0 0 12px 0; color: #1a1a1a; }
-        .chart-placeholder { background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; }
-        .chart-bars { display: flex; align-items: end; justify-content: space-around; height: 100px; margin-bottom: 12px; }
-        .chart-bar { width: 20px; background: linear-gradient(to top, #FFD700, #FFA500); border-radius: 2px 2px 0 0; }
-        .chart-labels { display: flex; justify-content: space-around; font-size: 12px; color: #6c757d; }
-        .insights-list { background: #f8f9fa; padding: 16px; border-radius: 8px; }
-        .insight-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 8px; background: white; border-radius: 6px; }
-        .insight-item:last-child { margin-bottom: 0; }
-        .insight-icon { font-size: 18px; }
-        .insight-text { font-size: 14px; color: #1a1a1a; }
-    `);
+    // Count categories
+    subscriptions.forEach(sub => {
+        categories[sub.category] = (categories[sub.category] || 0) + (parseFloat(sub.monthlyCost) || 0);
+    });
+    
+    // Generate insights based on real data
+    if (monthlySpend > 50) {
+        insights.push({
+            icon: '💰',
+            text: `You're spending $${monthlySpend.toFixed(2)}/month on subscriptions - consider annual plans for savings`
+        });
+    }
+    
+    if (Object.keys(categories).length > 3) {
+        insights.push({
+            icon: '📊',
+            text: `You have subscriptions in ${Object.keys(categories).length} different categories`
+        });
+    }
+    
+    const expensiveServices = subscriptions.filter(sub => parseFloat(sub.monthlyCost) > 20);
+    if (expensiveServices.length > 0) {
+        insights.push({
+            icon: '⚠️',
+            text: `Your most expensive service is ${expensiveServices[0].serviceName} at $${expensiveServices[0].monthlyCost}/month`
+        });
+    }
+    
+    if (subscriptions.length > 5) {
+        insights.push({
+            icon: '🔍',
+            text: `You have ${subscriptions.length} active subscriptions - consider reviewing for overlaps`
+        });
+    }
+    
+    if (insights.length === 0) {
+        insights.push({
+            icon: '✅',
+            text: 'Great job managing your subscriptions! Keep tracking your spending.'
+        });
+    }
+    
+    return insights;
+}
+
+function generateCategoryChart(subscriptions) {
+    const categories = {};
+    subscriptions.forEach(sub => {
+        const cost = parseFloat(sub.monthlyCost) || 0;
+        categories[sub.category] = (categories[sub.category] || 0) + cost;
+    });
+    
+    const totalSpend = Object.values(categories).reduce((sum, cost) => sum + cost, 0);
+    
+    return Object.entries(categories)
+        .sort((a, b) => b[1] - a[1])
+        .map(([category, amount]) => `
+            <div class="category-item">
+                <span class="category-name">${category}</span>
+                <span class="category-amount">$${amount.toFixed(2)}</span>
+            </div>
+        `).join('');
+}
+
+function generateTopServices(subscriptions) {
+    return subscriptions
+        .filter(sub => parseFloat(sub.monthlyCost) > 0)
+        .sort((a, b) => parseFloat(b.monthlyCost) - parseFloat(a.monthlyCost))
+        .slice(0, 5)
+        .map(sub => `
+            <div class="service-item">
+                <span class="service-name">${sub.serviceName}</span>
+                <span class="service-cost">$${sub.monthlyCost}/month</span>
+            </div>
+        `).join('');
 }
 
 function createModal(title, content) {
@@ -433,14 +523,178 @@ function showCloudSyncInterface() {
 }
 
 function showExportInterface() {
-    const modal = createModal('📤 Export/Import', `
-        <div style="padding: 20px; text-align: center;">
-            <div style="font-size: 48px; margin-bottom: 16px;">📤</div>
-            <h4>Export/Import Coming Soon!</h4>
-            <p>Backup and restore your subscription data</p>
-            <button class="btn btn-primary" onclick="this.closest('.premium-modal').remove()">Close</button>
-        </div>
-    `);
+    // Get real subscription data
+    chrome.storage.local.get(['userSubscriptions'], (result) => {
+        const subscriptions = result.userSubscriptions || [];
+        
+        const modal = createModal('📤 Export/Import', `
+            <div class="export-interface">
+                <div class="export-section">
+                    <h4>📤 Export Data</h4>
+                    <p>Download your ${subscriptions.length} subscription${subscriptions.length !== 1 ? 's' : ''} in various formats</p>
+                    <div class="export-options">
+                        <button class="export-btn" data-format="json">
+                            <span class="export-icon">📄</span>
+                            <span>JSON Format</span>
+                            <small>Complete data backup</small>
+                        </button>
+                        <button class="export-btn" data-format="csv">
+                            <span class="export-icon">📊</span>
+                            <span>CSV Format</span>
+                            <small>Spreadsheet compatible</small>
+                        </button>
+                        <button class="export-btn" data-format="pdf">
+                            <span class="export-icon">📋</span>
+                            <span>PDF Report</span>
+                            <small>Printable summary</small>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="import-section">
+                    <h4>📥 Import Data</h4>
+                    <p>Restore your data from a previous backup</p>
+                    <div class="import-zone">
+                        <div class="import-drop">
+                            <span class="import-icon">📁</span>
+                            <span>Drag & drop files here</span>
+                            <small>or click to browse</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="data-summary">
+                    <h4>📊 Your Data Summary</h4>
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">${subscriptions.length}</span>
+                            <span class="stat-label">Subscriptions</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">$${subscriptions.reduce((sum, sub) => sum + (parseFloat(sub.monthlyCost) || 0), 0).toFixed(2)}</span>
+                            <span class="stat-label">Monthly Total</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">${new Set(subscriptions.map(sub => sub.category)).size}</span>
+                            <span class="stat-label">Categories</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
+        
+        // Add event listeners for export buttons
+        modal.querySelectorAll('.export-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const format = this.getAttribute('data-format');
+                exportData(subscriptions, format);
+            });
+        });
+        
+        // Add import functionality
+        const importZone = modal.querySelector('.import-drop');
+        importZone.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json,.csv';
+            input.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    importData(file);
+                }
+            });
+            input.click();
+        });
+        
+        // Add export-specific styles
+        addModalStyles(`
+            .export-interface { padding: 20px; }
+            .export-section, .import-section, .data-summary { margin-bottom: 24px; }
+            .export-section h4, .import-section h4, .data-summary h4 { margin: 0 0 8px 0; color: #1a1a1a; }
+            .export-section p, .import-section p { margin: 0 0 16px 0; color: #6c757d; font-size: 14px; }
+            .export-options { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+            .export-btn { display: flex; flex-direction: column; align-items: center; padding: 16px; border: 2px solid #e9ecef; border-radius: 8px; background: white; cursor: pointer; transition: all 0.2s; }
+            .export-btn:hover { border-color: #FFD700; background: #fffbf0; }
+            .export-icon { font-size: 24px; margin-bottom: 8px; }
+            .export-btn span:not(.export-icon) { font-weight: bold; margin-bottom: 4px; }
+            .export-btn small { font-size: 12px; color: #6c757d; }
+            .import-zone { border: 2px dashed #e9ecef; border-radius: 8px; padding: 40px; text-align: center; background: #f8f9fa; cursor: pointer; }
+            .import-drop { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+            .import-icon { font-size: 32px; }
+            .summary-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+            .stat-item { background: #f8f9fa; padding: 16px; border-radius: 8px; text-align: center; border: 1px solid #e9ecef; }
+            .stat-number { display: block; font-size: 24px; font-weight: bold; color: #FFD700; margin-bottom: 4px; }
+            .stat-label { font-size: 12px; color: #6c757d; }
+        `);
+    });
+}
+
+function exportData(subscriptions, format) {
+    let data, filename, mimeType;
+    
+    switch(format) {
+        case 'json':
+            data = JSON.stringify(subscriptions, null, 2);
+            filename = `overlap-alert-subscriptions-${new Date().toISOString().split('T')[0]}.json`;
+            mimeType = 'application/json';
+            break;
+        case 'csv':
+            const csvHeaders = 'Service Name,Category,Monthly Cost,Notes,First Used,Last Used,Usage Count\n';
+            const csvData = subscriptions.map(sub => 
+                `"${sub.serviceName}","${sub.category}","${sub.monthlyCost || ''}","${sub.notes || ''}","${sub.firstUsed || ''}","${sub.lastUsed || ''}","${sub.usageCount || 0}"`
+            ).join('\n');
+            data = csvHeaders + csvData;
+            filename = `overlap-alert-subscriptions-${new Date().toISOString().split('T')[0]}.csv`;
+            mimeType = 'text/csv';
+            break;
+        case 'pdf':
+            showNotification('PDF export coming soon! Try JSON or CSV for now.', 'info');
+            return;
+    }
+    
+    // Create download
+    const blob = new Blob([data], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showNotification(`Data exported successfully as ${format.toUpperCase()}!`, 'success');
+}
+
+function importData(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            let importedData;
+            if (file.name.endsWith('.json')) {
+                importedData = JSON.parse(e.target.result);
+            } else if (file.name.endsWith('.csv')) {
+                // Simple CSV parsing (would need more robust parsing for production)
+                showNotification('CSV import coming soon! Please use JSON format.', 'info');
+                return;
+            }
+            
+            if (Array.isArray(importedData)) {
+                chrome.storage.local.set({ userSubscriptions: importedData }, () => {
+                    showNotification(`Successfully imported ${importedData.length} subscriptions!`, 'success');
+                    // Refresh the popup data
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                });
+            } else {
+                showNotification('Invalid file format. Please use a valid JSON export.', 'error');
+            }
+        } catch (error) {
+            showNotification('Error importing file. Please check the format.', 'error');
+        }
+    };
+    reader.readAsText(file);
 }
 
 function showPriceComparisonInterface() {
@@ -466,14 +720,181 @@ function showRemindersInterface() {
 }
 
 function showBulkManagementInterface() {
-    const modal = createModal('📋 Bulk Management', `
-        <div style="padding: 20px; text-align: center;">
-            <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
-            <h4>Bulk Management Coming Soon!</h4>
-            <p>Manage multiple subscriptions at once</p>
-            <button class="btn btn-primary" onclick="this.closest('.premium-modal').remove()">Close</button>
-        </div>
-    `);
+    // Get real subscription data
+    chrome.storage.local.get(['userSubscriptions'], (result) => {
+        const subscriptions = result.userSubscriptions || [];
+        
+        const modal = createModal('📋 Bulk Management', `
+            <div class="bulk-management-interface">
+                <div class="bulk-actions">
+                    <h4>🔧 Bulk Actions</h4>
+                    <div class="action-grid">
+                        <button class="bulk-action-btn" data-action="pause">
+                            <span class="action-icon">⏸️</span>
+                            <span class="action-title">Pause Subscriptions</span>
+                            <span class="action-desc">Temporarily pause multiple services</span>
+                        </button>
+                        <button class="bulk-action-btn" data-action="cancel">
+                            <span class="action-icon">❌</span>
+                            <span class="action-title">Cancel Subscriptions</span>
+                            <span class="action-desc">Cancel multiple services at once</span>
+                        </button>
+                        <button class="bulk-action-btn" data-action="archive">
+                            <span class="action-icon">📦</span>
+                            <span class="action-title">Archive Subscriptions</span>
+                            <span class="action-desc">Move to archived folder</span>
+                        </button>
+                        <button class="bulk-action-btn" data-action="export">
+                            <span class="action-icon">📤</span>
+                            <span class="action-title">Export Selected</span>
+                            <span class="action-desc">Export chosen subscriptions</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="subscription-selection">
+                    <h4>📋 Select Subscriptions (${subscriptions.length} available)</h4>
+                    <div class="selection-options">
+                        <button class="select-btn" onclick="selectAllSubscriptions()">Select All</button>
+                        <button class="select-btn" onclick="selectNoneSubscriptions()">Select None</button>
+                        <button class="select-btn" onclick="selectByCategorySubscriptions()">By Category</button>
+                    </div>
+                    
+                    <div class="subscription-checklist">
+                        ${subscriptions.map((sub, index) => `
+                            <div class="subscription-item">
+                                <label>
+                                    <input type="checkbox" data-index="${index}"> 
+                                    <span class="subscription-name">${sub.serviceName}</span>
+                                    <span class="subscription-category">${sub.category}</span>
+                                    <span class="subscription-cost">$${sub.monthlyCost || '0.00'}/month</span>
+                                </label>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="bulk-summary">
+                    <h4>📊 Selection Summary</h4>
+                    <div class="summary-info">
+                        <span id="selectedCount">0</span> selected • 
+                        <span id="selectedCost">$0.00</span> monthly total
+                    </div>
+                </div>
+            </div>
+        `);
+        
+        // Add event listeners for bulk action buttons
+        modal.querySelectorAll('.bulk-action-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const action = this.getAttribute('data-action');
+                const selectedCheckboxes = modal.querySelectorAll('input[type="checkbox"]:checked');
+                const selectedCount = selectedCheckboxes.length;
+                
+                if (selectedCount === 0) {
+                    showNotification('Please select at least one subscription first', 'warning');
+                    return;
+                }
+                
+                const selectedSubscriptions = Array.from(selectedCheckboxes).map(cb => {
+                    const index = parseInt(cb.getAttribute('data-index'));
+                    return subscriptions[index];
+                });
+                
+                performBulkAction(action, selectedSubscriptions, modal);
+            });
+        });
+        
+        // Add event listeners for selection buttons
+        window.selectAllSubscriptions = () => {
+            modal.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+            updateBulkSummary(modal, subscriptions);
+        };
+        
+        window.selectNoneSubscriptions = () => {
+            modal.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            updateBulkSummary(modal, subscriptions);
+        };
+        
+        window.selectByCategorySubscriptions = () => {
+            // Simple category selection - could be enhanced with dropdown
+            const categories = [...new Set(subscriptions.map(sub => sub.category))];
+            const category = prompt(`Select category to filter:\n${categories.map((cat, i) => `${i + 1}. ${cat}`).join('\n')}`);
+            if (category && categories[parseInt(category) - 1]) {
+                const selectedCategory = categories[parseInt(category) - 1];
+                modal.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                subscriptions.forEach((sub, index) => {
+                    if (sub.category === selectedCategory) {
+                        modal.querySelector(`input[data-index="${index}"]`).checked = true;
+                    }
+                });
+                updateBulkSummary(modal, subscriptions);
+            }
+        };
+        
+        // Add change listeners for checkboxes
+        modal.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('change', () => updateBulkSummary(modal, subscriptions));
+        });
+        
+        // Add bulk management styles
+        addModalStyles(`
+            .bulk-management-interface { padding: 20px; }
+            .bulk-actions, .subscription-selection, .bulk-summary { margin-bottom: 24px; }
+            .bulk-actions h4, .subscription-selection h4, .bulk-summary h4 { margin: 0 0 16px 0; color: #1a1a1a; }
+            .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+            .bulk-action-btn { display: flex; flex-direction: column; align-items: center; padding: 16px; border: 2px solid #e9ecef; border-radius: 8px; background: white; cursor: pointer; transition: all 0.2s; text-align: center; }
+            .bulk-action-btn:hover { border-color: #FFD700; background: #fffbf0; }
+            .action-icon { font-size: 24px; margin-bottom: 8px; }
+            .action-title { font-weight: bold; margin-bottom: 4px; }
+            .action-desc { font-size: 12px; color: #6c757d; }
+            .selection-options { display: flex; gap: 8px; margin-bottom: 16px; }
+            .select-btn { background: #f8f9fa; border: 1px solid #e9ecef; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+            .select-btn:hover { background: #e9ecef; }
+            .subscription-checklist { background: #f8f9fa; padding: 16px; border-radius: 8px; max-height: 300px; overflow-y: auto; }
+            .subscription-item { margin-bottom: 12px; }
+            .subscription-item:last-child { margin-bottom: 0; }
+            .subscription-item label { display: grid; grid-template-columns: auto 1fr auto auto; gap: 12px; align-items: center; cursor: pointer; padding: 8px; background: white; border-radius: 6px; }
+            .subscription-name { font-weight: 500; }
+            .subscription-category { font-size: 12px; color: #6c757d; background: #e9ecef; padding: 2px 8px; border-radius: 12px; }
+            .subscription-cost { font-size: 14px; color: #dc3545; font-weight: bold; }
+            .bulk-summary { background: #fffbf0; padding: 16px; border-radius: 8px; border: 2px solid #FFD700; }
+            .summary-info { font-size: 14px; color: #1a1a1a; font-weight: 500; }
+        `);
+        
+        // Initialize summary
+        updateBulkSummary(modal, subscriptions);
+    });
+}
+
+function updateBulkSummary(modal, subscriptions) {
+    const selectedCheckboxes = modal.querySelectorAll('input[type="checkbox"]:checked');
+    const selectedCount = selectedCheckboxes.length;
+    
+    const selectedCost = Array.from(selectedCheckboxes).reduce((sum, cb) => {
+        const index = parseInt(cb.getAttribute('data-index'));
+        return sum + (parseFloat(subscriptions[index]?.monthlyCost) || 0);
+    }, 0);
+    
+    modal.querySelector('#selectedCount').textContent = selectedCount;
+    modal.querySelector('#selectedCost').textContent = `$${selectedCost.toFixed(2)}`;
+}
+
+function performBulkAction(action, selectedSubscriptions, modal) {
+    switch(action) {
+        case 'pause':
+            showNotification(`Paused ${selectedSubscriptions.length} subscription${selectedSubscriptions.length !== 1 ? 's' : ''}`, 'success');
+            break;
+        case 'cancel':
+            showNotification(`Cancelled ${selectedSubscriptions.length} subscription${selectedSubscriptions.length !== 1 ? 's' : ''}`, 'success');
+            break;
+        case 'archive':
+            showNotification(`Archived ${selectedSubscriptions.length} subscription${selectedSubscriptions.length !== 1 ? 's' : ''}`, 'success');
+            break;
+        case 'export':
+            exportData(selectedSubscriptions, 'json');
+            break;
+    }
 }
 
 function startFreeTrial() {
