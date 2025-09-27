@@ -102,6 +102,139 @@ function updateStats(subscriptions) {
     
     document.getElementById('totalSubscriptions').textContent = totalSubscriptions;
     document.getElementById('totalUsage').textContent = totalUsage;
+    
+    // Add premium features section
+    addPremiumFeaturesSection();
+}
+
+function addPremiumFeaturesSection() {
+    // Check if premium section already exists
+    if (document.getElementById('premium-features-section')) {
+        return;
+    }
+    
+    const premiumSection = document.createElement('div');
+    premiumSection.id = 'premium-features-section';
+    premiumSection.style.cssText = `
+        margin-top: 24px;
+        padding: 20px;
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        border-radius: 12px;
+        color: #1a1a1a;
+    `;
+
+    premiumSection.innerHTML = `
+        <h3 style="margin: 0 0 16px 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">
+            <span>⚡</span>
+            Premium Features
+        </h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <button class="premium-feature-btn" onclick="showPremiumFeature('analytics')" style="
+                background: rgba(255, 255, 255, 0.2);
+                border: none;
+                padding: 12px;
+                border-radius: 8px;
+                color: #1a1a1a;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+            ">📊 Analytics</button>
+            
+            <button class="premium-feature-btn" onclick="showPremiumFeature('cloud-sync')" style="
+                background: rgba(255, 255, 255, 0.2);
+                border: none;
+                padding: 12px;
+                border-radius: 8px;
+                color: #1a1a1a;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+            ">☁️ Cloud Sync</button>
+            
+            <button class="premium-feature-btn" onclick="showPremiumFeature('export')" style="
+                background: rgba(255, 255, 255, 0.2);
+                border: none;
+                padding: 12px;
+                border-radius: 8px;
+                color: #1a1a1a;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+            ">📤 Export/Import</button>
+            
+            <button class="premium-feature-btn" onclick="showPremiumFeature('price-compare')" style="
+                background: rgba(255, 255, 255, 0.2);
+                border: none;
+                padding: 12px;
+                border-radius: 8px;
+                color: #1a1a1a;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+            ">💰 Price Compare</button>
+            
+            <button class="premium-feature-btn" onclick="showPremiumFeature('reminders')" style="
+                background: rgba(255, 255, 255, 0.2);
+                border: none;
+                padding: 12px;
+                border-radius: 8px;
+                color: #1a1a1a;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+            ">🔔 Reminders</button>
+            
+            <button class="premium-feature-btn" onclick="showPremiumFeature('bulk-manage')" style="
+                background: rgba(255, 255, 255, 0.2);
+                border: none;
+                padding: 12px;
+                border-radius: 8px;
+                color: #1a1a1a;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+            ">📋 Bulk Manage</button>
+        </div>
+        
+        <div style="margin-top: 16px; text-align: center;">
+            <button onclick="startFreeTrial()" style="
+                background: #1a1a1a;
+                color: #FFD700;
+                border: 2px solid #FFD700;
+                padding: 8px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: bold;
+            ">Start 14-Day Free Trial</button>
+        </div>
+    `;
+
+    // Add to the popup content
+    const content = document.querySelector('.popup-content');
+    if (content) {
+        content.appendChild(premiumSection);
+    }
+}
+
+// Global functions for premium features
+function showPremiumFeature(feature) {
+    const messages = {
+        'analytics': 'Advanced Analytics: Get detailed insights into your subscription spending and usage patterns',
+        'cloud-sync': 'Cloud Sync: Sync your subscriptions across all your devices',
+        'export': 'Export/Import: Backup and restore your subscription data',
+        'price-compare': 'Price Comparison: Find better deals and save money with price comparison tools',
+        'reminders': 'Renewal Reminders: Never miss a renewal with smart reminders',
+        'bulk-manage': 'Bulk Management: Manage multiple subscriptions at once'
+    };
+    
+    showNotification(messages[feature] || 'Premium feature coming soon!', 'info');
+}
+
+function startFreeTrial() {
+    showNotification('Starting 14-day free trial... All premium features are now unlocked!', 'success');
+    // In a real implementation, this would call the monetization manager
 }
 
 function updateSubscriptionList(subscriptions) {
