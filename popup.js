@@ -500,6 +500,11 @@ function createModal(title, content) {
         if (e.target === modal) modal.remove();
     });
     
+    // Add event listeners for all close buttons
+    modal.querySelectorAll('.modal-close-btn').forEach(btn => {
+        btn.addEventListener('click', () => modal.remove());
+    });
+    
     document.body.appendChild(modal);
     return modal;
 }
@@ -517,7 +522,7 @@ function showCloudSyncInterface() {
             <div style="font-size: 48px; margin-bottom: 16px;">☁️</div>
             <h4>Cloud Sync Coming Soon!</h4>
             <p>Sync your subscriptions across all your devices</p>
-            <button class="btn btn-primary" onclick="this.closest('.premium-modal').remove()">Close</button>
+            <button class="btn btn-primary modal-close-btn">Close</button>
         </div>
     `);
 }
@@ -703,7 +708,7 @@ function showPriceComparisonInterface() {
             <div style="font-size: 48px; margin-bottom: 16px;">💰</div>
             <h4>Price Comparison Coming Soon!</h4>
             <p>Find better deals and save money</p>
-            <button class="btn btn-primary" onclick="this.closest('.premium-modal').remove()">Close</button>
+            <button class="btn btn-primary modal-close-btn">Close</button>
         </div>
     `);
 }
@@ -714,7 +719,7 @@ function showRemindersInterface() {
             <div style="font-size: 48px; margin-bottom: 16px;">🔔</div>
             <h4>Renewal Reminders Coming Soon!</h4>
             <p>Never miss a renewal with smart reminders</p>
-            <button class="btn btn-primary" onclick="this.closest('.premium-modal').remove()">Close</button>
+            <button class="btn btn-primary modal-close-btn">Close</button>
         </div>
     `);
 }
@@ -755,9 +760,9 @@ function showBulkManagementInterface() {
                 <div class="subscription-selection">
                     <h4>📋 Select Subscriptions (${subscriptions.length} available)</h4>
                     <div class="selection-options">
-                        <button class="select-btn" onclick="selectAllSubscriptions()">Select All</button>
-                        <button class="select-btn" onclick="selectNoneSubscriptions()">Select None</button>
-                        <button class="select-btn" onclick="selectByCategorySubscriptions()">By Category</button>
+                        <button class="select-btn" data-action="select-all">Select All</button>
+                        <button class="select-btn" data-action="select-none">Select None</button>
+                        <button class="select-btn" data-action="select-by-category">By Category</button>
                     </div>
                     
                     <div class="subscription-checklist">
@@ -806,31 +811,37 @@ function showBulkManagementInterface() {
         });
         
         // Add event listeners for selection buttons
-        window.selectAllSubscriptions = () => {
-            modal.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
-            updateBulkSummary(modal, subscriptions);
-        };
-        
-        window.selectNoneSubscriptions = () => {
-            modal.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-            updateBulkSummary(modal, subscriptions);
-        };
-        
-        window.selectByCategorySubscriptions = () => {
-            // Simple category selection - could be enhanced with dropdown
-            const categories = [...new Set(subscriptions.map(sub => sub.category))];
-            const category = prompt(`Select category to filter:\n${categories.map((cat, i) => `${i + 1}. ${cat}`).join('\n')}`);
-            if (category && categories[parseInt(category) - 1]) {
-                const selectedCategory = categories[parseInt(category) - 1];
-                modal.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-                subscriptions.forEach((sub, index) => {
-                    if (sub.category === selectedCategory) {
-                        modal.querySelector(`input[data-index="${index}"]`).checked = true;
-                    }
-                });
-                updateBulkSummary(modal, subscriptions);
-            }
-        };
+        modal.querySelectorAll('.select-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const action = this.getAttribute('data-action');
+                
+                switch(action) {
+                    case 'select-all':
+                        modal.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+                        updateBulkSummary(modal, subscriptions);
+                        break;
+                    case 'select-none':
+                        modal.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                        updateBulkSummary(modal, subscriptions);
+                        break;
+                    case 'select-by-category':
+                        // Simple category selection - could be enhanced with dropdown
+                        const categories = [...new Set(subscriptions.map(sub => sub.category))];
+                        const category = prompt(`Select category to filter:\n${categories.map((cat, i) => `${i + 1}. ${cat}`).join('\n')}`);
+                        if (category && categories[parseInt(category) - 1]) {
+                            const selectedCategory = categories[parseInt(category) - 1];
+                            modal.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                            subscriptions.forEach((sub, index) => {
+                                if (sub.category === selectedCategory) {
+                                    modal.querySelector(`input[data-index="${index}"]`).checked = true;
+                                }
+                            });
+                            updateBulkSummary(modal, subscriptions);
+                        }
+                        break;
+                }
+            });
+        });
         
         // Add change listeners for checkboxes
         modal.querySelectorAll('input[type="checkbox"]').forEach(cb => {
