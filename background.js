@@ -288,9 +288,3 @@ chrome.runtime.onStartup.addListener(() => {
     console.error('Error in startup listener:', error);
   }
 });
-
-// Add error handling wrapper for the entire message listener
-} catch (error) {
-  console.error('Error in message listener:', error);
-  sendResponse({ error: 'Internal server error' });
-}

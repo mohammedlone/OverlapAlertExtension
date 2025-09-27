@@ -26,8 +26,14 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["subscription-database.js", "content.js"],
+      "js": ["subscription-database.js", "monetization.js", "content.js"],
       "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["analytics.js", "cloud-sync.js", "data-export.js", "price-comparison.js", "renewal-reminders.js", "bulk-management.js"],
+      "matches": ["<all_urls>"]
     }
   ],
   "action": {
