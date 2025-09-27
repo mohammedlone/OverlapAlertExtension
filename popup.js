@@ -115,13 +115,14 @@ function addPremiumFeaturesSection() {
     
     const premiumSection = document.createElement('div');
     premiumSection.id = 'premium-features-section';
-    premiumSection.style.cssText = `
-        margin-top: 24px;
-        padding: 20px;
-        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-        border-radius: 12px;
-        color: #1a1a1a;
-    `;
+            premiumSection.style.cssText = `
+                margin-top: 24px;
+                padding: 24px;
+                background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+                border-radius: 12px;
+                color: #1a1a1a;
+                min-height: 280px;
+            `;
 
     premiumSection.innerHTML = `
         <h3 style="margin: 0 0 16px 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">
@@ -129,7 +130,7 @@ function addPremiumFeaturesSection() {
             Premium Features
         </h3>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
             <button class="premium-feature-btn" onclick="showPremiumFeature('analytics')" style="
                 background: rgba(255, 255, 255, 0.2);
                 border: none;
