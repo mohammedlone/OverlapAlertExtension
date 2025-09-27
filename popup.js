@@ -131,7 +131,7 @@ function addPremiumFeaturesSection() {
         </h3>
         
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-            <button class="premium-feature-btn" onclick="showPremiumFeature('analytics')" style="
+            <button class="premium-feature-btn" data-feature="analytics" style="
                 background: rgba(255, 255, 255, 0.2);
                 border: none;
                 padding: 12px;
@@ -142,7 +142,7 @@ function addPremiumFeaturesSection() {
                 font-weight: 500;
             ">📊 Analytics</button>
             
-            <button class="premium-feature-btn" onclick="showPremiumFeature('cloud-sync')" style="
+            <button class="premium-feature-btn" data-feature="cloud-sync" style="
                 background: rgba(255, 255, 255, 0.2);
                 border: none;
                 padding: 12px;
@@ -153,7 +153,7 @@ function addPremiumFeaturesSection() {
                 font-weight: 500;
             ">☁️ Cloud Sync</button>
             
-            <button class="premium-feature-btn" onclick="showPremiumFeature('export')" style="
+            <button class="premium-feature-btn" data-feature="export" style="
                 background: rgba(255, 255, 255, 0.2);
                 border: none;
                 padding: 12px;
@@ -164,7 +164,7 @@ function addPremiumFeaturesSection() {
                 font-weight: 500;
             ">📤 Export/Import</button>
             
-            <button class="premium-feature-btn" onclick="showPremiumFeature('price-compare')" style="
+            <button class="premium-feature-btn" data-feature="price-compare" style="
                 background: rgba(255, 255, 255, 0.2);
                 border: none;
                 padding: 12px;
@@ -175,7 +175,7 @@ function addPremiumFeaturesSection() {
                 font-weight: 500;
             ">💰 Price Compare</button>
             
-            <button class="premium-feature-btn" onclick="showPremiumFeature('reminders')" style="
+            <button class="premium-feature-btn" data-feature="reminders" style="
                 background: rgba(255, 255, 255, 0.2);
                 border: none;
                 padding: 12px;
@@ -186,7 +186,7 @@ function addPremiumFeaturesSection() {
                 font-weight: 500;
             ">🔔 Reminders</button>
             
-            <button class="premium-feature-btn" onclick="showPremiumFeature('bulk-manage')" style="
+            <button class="premium-feature-btn" data-feature="bulk-manage" style="
                 background: rgba(255, 255, 255, 0.2);
                 border: none;
                 padding: 12px;
@@ -199,7 +199,7 @@ function addPremiumFeaturesSection() {
         </div>
         
         <div style="margin-top: 16px; text-align: center;">
-            <button onclick="startFreeTrial()" style="
+            <button class="free-trial-btn" style="
                 background: #1a1a1a;
                 color: #FFD700;
                 border: 2px solid #FFD700;
@@ -216,6 +216,25 @@ function addPremiumFeaturesSection() {
     const content = document.querySelector('.popup-content');
     if (content) {
         content.appendChild(premiumSection);
+        
+        // Add event listeners for premium feature buttons
+        const premiumButtons = premiumSection.querySelectorAll('.premium-feature-btn');
+        premiumButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const feature = this.getAttribute('data-feature');
+                console.log('Premium feature clicked:', feature);
+                showPremiumFeature(feature);
+            });
+        });
+        
+        // Add event listener for free trial button
+        const freeTrialBtn = premiumSection.querySelector('.free-trial-btn');
+        if (freeTrialBtn) {
+            freeTrialBtn.addEventListener('click', function() {
+                console.log('Free trial button clicked');
+                startFreeTrial();
+            });
+        }
     }
 }
 
